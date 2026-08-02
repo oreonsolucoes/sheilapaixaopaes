@@ -44,21 +44,36 @@ function renderProdutos() {
   });
 }
 
-// ---------- Semanas de entrega ----------
-const semanaSel = $("#semana");
-Core.proximasSegundas(8).forEach(iso => {
+// ---------- Levas e dias de entrega ----------
+const levaSel = $("#leva");
+const diaSel = $("#dia-entrega");
+const hojeIso = Core.ymd(new Date());
+
+Core.proximasSemanas(8).forEach(sab => {
   const o = document.createElement("option");
-  o.value = iso;
-  o.textContent = Core.rotuloSemana(iso);
-  semanaSel.appendChild(o);
+  o.value = sab;
+  o.textContent = Core.rotuloSemana(sab);
+  levaSel.appendChild(o);
 });
-semanaSel.addEventListener("change", monitorarSemana);
-let pararMonitor = null;
+
+// Preenche os dias de entrega (sáb/dom/seg) da leva escolhida,
+// ocultando dias que já passaram.
+function preencherDias() {
+  const sab = levaSel.value;
+  const dias = Core.diasDaLeva(sab).filter(d => d >= hojeIso);
+  diaSel.innerHTML = dias.map(d =>
+    `<option value="${d}">${Core.rotuloDia(d)}</option>`).join("");
+  // Se todos os dias da leva já passaram (não deve acontecer), some com ela.
+  if (!dias.length) diaSel.innerHTML = `<option value="">—</option>`;
+}
+
+levaSel.addEventListener("change", () => { preencherDias(); monitorarSemana(); });
+preencherDias();
 
 function monitorarSemana() {
-  const iso = semanaSel.value;
+  const sab = levaSel.value;
   const el = $("#status-semana");
-  Core.lerSemanaUmaVez(iso).then(e => {
+  Core.lerSemanaUmaVez(sab).then(e => {
     if (e.travada) {
       el.className = "status-semana travada";
       el.textContent = "Semana cheia — escolha outra data.";
@@ -136,7 +151,8 @@ $("#form-pedido").addEventListener("submit", async e => {
 
   const nome = $("#nome").value.trim();
   const whats = $("#whats").value.trim();
-  const semana = semanaSel.value;
+  const leva = levaSel.value;
+  const diaEntrega = diaSel.value;
   const itens = [];
   document.querySelectorAll(".bloco").forEach(b => {
     const id = b.querySelector(".bloco-produto").value;
@@ -148,14 +164,15 @@ $("#form-pedido").addEventListener("submit", async e => {
 
   const { totalPaes, totalValor } = recalcular();
   if (!itens.length || totalPaes < 1) { msg.textContent = "Adicione ao menos um pão."; return; }
+  if (!diaEntrega) { msg.textContent = "Escolha o dia de entrega."; return; }
 
   btn.disabled = true; btn.textContent = "Enviando…";
   try {
-    const pedido = { nome, whatsapp: whats, semana, itens, totalPaes, totalValor };
+    const pedido = { nome, whatsapp: whats, leva, diaEntrega, itens, totalPaes, totalValor };
     await Core.criarPedido(pedido);
     $("#modal-msg").innerHTML =
       `Obrigada, <strong>${escape(nome)}</strong>! Sua encomenda de <strong>${totalPaes} pães</strong> ` +
-      `para <strong>${Core.rotuloSemana(semana)}</strong> está confirmada. ` +
+      `para <strong>${Core.rotuloDia(diaEntrega)}</strong> está confirmada. ` +
       `Você recebe os detalhes no WhatsApp.`;
     $("#modal").hidden = false;
   } catch (err) {
