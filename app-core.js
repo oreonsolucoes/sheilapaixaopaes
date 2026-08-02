@@ -23,64 +23,81 @@
   const db = firebase.database();
   const auth = firebase.auth();
 
-  // ---------- Datas / semanas de entrega ----------
-  // Uma "semana de entrega" é identificada pela data (ISO) da SEGUNDA de entrega.
+  // ---------- Datas / levas de entrega ----------
+  // Uma "leva" é assada no SÁBADO e entregue em sáb, dom OU seg.
+  // A leva é identificada pela data ISO do SÁBADO (âncora / dia que assa).
+  // Corte: pedidos até DOMINGO entram na leva deste fim de semana;
+  //        a partir de SEGUNDA, vão para a leva do próximo sábado.
   function ymd(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
-           "-" + String(d.getDate()).padStart(2, "0");
+      "-" + String(d.getDate()).padStart(2, "0");
   }
   function parseYmd(s) {
     const [y, m, dd] = s.split("-").map(Number);
     return new Date(y, m - 1, dd);
   }
-  // Próxima segunda de entrega para uma data de pedido.
-  // Regra: pedidos de domingo a sexta contam para a segunda seguinte.
-  // Se o pedido cair no sábado/domingo, entra para a segunda da PRÓXIMA semana,
-  // pois o sábado é o dia de confecção do lote já fechado.
-  function proximaSegundaDeEntrega(base = new Date()) {
+  // Sábado âncora da leva atual/próxima para uma data de pedido.
+  function sabadoDaLeva(base = new Date()) {
     const d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
-    const dow = d.getDay(); // 0 dom ... 6 sáb
-    let add;
-    if (dow === 0) add = 1;                 // domingo -> segunda de amanhã
-    else if (dow >= 1 && dow <= 5) add = 8 - dow; // seg-sex -> próxima segunda
-    else add = 2;                            // sábado -> segunda +2 (lote já em confecção)
-    d.setDate(d.getDate() + add);
+    const dow = d.getDay(); // 0 dom, 1 seg ... 6 sáb
+    if (dow === 6) return d;                                   // sábado -> hoje
+    if (dow === 0) { d.setDate(d.getDate() - 1); return d; }   // domingo -> sábado de ontem (leva atual)
+    d.setDate(d.getDate() + (6 - dow));                        // seg-sex -> próximo sábado
     return d;
   }
-  // Lista as próximas N segundas selecionáveis a partir de hoje.
-  function proximasSegundas(n = 8) {
+  // Os 3 dias de entrega de uma leva (sáb, dom, seg), a partir do sábado âncora.
+  function diasDaLeva(sabIso) {
+    const sab = parseYmd(sabIso);
+    const dom = new Date(sab); dom.setDate(sab.getDate() + 1);
+    const seg = new Date(sab); seg.setDate(sab.getDate() + 2);
+    return [ymd(sab), ymd(dom), ymd(seg)];
+  }
+  // Lista as próximas N levas (sábados âncora) a partir de hoje.
+  function proximasSemanas(n = 8) {
     const out = [];
-    let seg = proximaSegundaDeEntrega(new Date());
+    let sab = sabadoDaLeva(new Date());
     for (let i = 0; i < n; i++) {
-      out.push(ymd(seg));
-      seg = new Date(seg); seg.setDate(seg.getDate() + 7);
+      out.push(ymd(sab));
+      sab = new Date(sab); sab.setDate(sab.getDate() + 7);
     }
     return out;
   }
-  function rotuloSemana(iso) {
+  const NOMES_DIA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+  const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  // Rótulo de um DIA de entrega específico (ex.: "Domingo, 3 de ago.")
+  function rotuloDia(iso) {
     const d = parseYmd(iso);
-    const meses = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
-    return "Segunda, " + d.getDate() + " de " + meses[d.getMonth()] + ".";
+    return NOMES_DIA[d.getDay()] + ", " + d.getDate() + " de " + MESES[d.getMonth()] + ".";
+  }
+  // Rótulo de uma LEVA (pelo sábado âncora) — ex.: "Leva de 1–3 de ago."
+  function rotuloSemana(sabIso) {
+    const [s, , seg] = diasDaLeva(sabIso);
+    const ds = parseYmd(s), dg = parseYmd(seg);
+    if (ds.getMonth() === dg.getMonth())
+      return "Leva de " + ds.getDate() + "–" + dg.getDate() + " de " + MESES[ds.getMonth()] + ".";
+    return "Leva de " + ds.getDate() + " " + MESES[ds.getMonth()] + " a " +
+      dg.getDate() + " " + MESES[dg.getMonth()] + ".";
   }
 
-  // ---------- Disponibilidade por semana ----------
-  // Retorna { usados, capacidade, restantes, travada } observando em tempo real.
-  function observarSemana(iso, cb) {
-    db.ref("pedidos").orderByChild("semana").equalTo(iso).on("value", snap => {
+  // ---------- Disponibilidade por leva ----------
+  // A capacidade (20 pães) é da LEVA inteira, somando entregas de sáb+dom+seg.
+  // Cada pedido guarda o campo "leva" = sábado âncora.
+  function observarSemana(leva, cb) {
+    db.ref("pedidos").orderByChild("leva").equalTo(leva).on("value", snap => {
       let usados = 0;
       snap.forEach(ch => { usados += Number(ch.val().totalPaes || 0); });
-      db.ref("config/capacidadeSemana/" + iso).once("value").then(capSnap => {
+      db.ref("config/capacidadeSemana/" + leva).once("value").then(capSnap => {
         const capacidade = capSnap.exists() ? Number(capSnap.val()) : BUSINESS.paesPorSemana;
         const restantes = Math.max(0, capacidade - usados);
         cb({ usados, capacidade, restantes, travada: restantes <= 0 });
       });
     });
   }
-  function lerSemanaUmaVez(iso) {
-    return db.ref("pedidos").orderByChild("semana").equalTo(iso).once("value").then(snap => {
+  function lerSemanaUmaVez(leva) {
+    return db.ref("pedidos").orderByChild("leva").equalTo(leva).once("value").then(snap => {
       let usados = 0;
       snap.forEach(ch => { usados += Number(ch.val().totalPaes || 0); });
-      return db.ref("config/capacidadeSemana/" + iso).once("value").then(capSnap => {
+      return db.ref("config/capacidadeSemana/" + leva).once("value").then(capSnap => {
         const capacidade = capSnap.exists() ? Number(capSnap.val()) : BUSINESS.paesPorSemana;
         const restantes = Math.max(0, capacidade - usados);
         return { usados, capacidade, restantes, travada: restantes <= 0 };
@@ -101,10 +118,10 @@
     });
   }
 
-  // ---------- Criar pedido (transação para respeitar a trava) ----------
+  // ---------- Criar pedido (respeita a trava da leva) ----------
   async function criarPedido(pedido) {
-    const semana = pedido.semana;
-    const estado = await lerSemanaUmaVez(semana);
+    const leva = pedido.leva;
+    const estado = await lerSemanaUmaVez(leva);
     if (estado.travada) throw new Error("SEMANA_TRAVADA");
     if (pedido.totalPaes > estado.restantes)
       throw new Error("SEM_VAGAS:" + estado.restantes);
@@ -122,8 +139,11 @@
         await fetch(WHATSAPP_WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: ref.key, ...registro,
-            rotuloSemana: rotuloSemana(semana) })
+          body: JSON.stringify({
+            id: ref.key, ...registro,
+            rotuloEntrega: rotuloDia(pedido.diaEntrega),
+            rotuloLeva: rotuloSemana(leva)
+          })
         });
       } catch (e) { console.warn("Webhook falhou:", e); }
     }
@@ -132,7 +152,8 @@
 
   window.Core = {
     db, auth, BUSINESS,
-    ymd, parseYmd, proximasSegundas, rotuloSemana,
+    ymd, parseYmd, sabadoDaLeva, diasDaLeva, proximasSemanas,
+    rotuloDia, rotuloSemana,
     observarSemana, lerSemanaUmaVez, observarProdutos, criarPedido
   };
 })();
