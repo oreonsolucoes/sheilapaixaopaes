@@ -7,10 +7,10 @@
     },
     "pedidos": {
       ".read": "auth != null",
-      ".indexOn": ["semana", "criadoEm"],
+      ".indexOn": ["leva", "criadoEm"],
       "$pid": {
         ".write": "auth != null || (!data.exists() && newData.exists())",
-        ".validate": "newData.hasChildren(['nome','whatsapp','semana','itens','totalPaes'])"
+        ".validate": "newData.hasChildren(['nome','whatsapp','leva','diaEntrega','itens','totalPaes'])"
       }
     },
     "config": {
