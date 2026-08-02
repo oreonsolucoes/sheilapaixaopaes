@@ -26,13 +26,14 @@ const firebaseConfig = {
 // ------------------------------------------------------------
 const WHATSAPP_WEBHOOK_URL = "";
 
+// Configurações do negócio
 const BUSINESS = {
-  paesPorSemana: 10,          // capacidade de confecção por semana
-  fechaPedidosNo: 5,          // 5 = sexta (0=dom ... 6=sáb). Trava ao atingir a capacidade entre dom e sex
-  entregaNoDia: 1,            // 1 = segunda-feira
+  paesPorSemana: 20,          // capacidade por leva (soma de sáb+dom+seg)
+  entregaDias: [6, 0, 1],     // dias de entrega: 6=sáb, 0=dom, 1=seg
+  cortePedidoDia: 0,          // pedidos até domingo (0) entram na leva atual; a partir de segunda, próxima
   nomeLoja: "Sheila Paixão",
   slogan: "Feito à mão, feito pra você",
-  whatsappContato: "5511976761111"   // número da loja (só dígitos, com 55). Usado no botão flutuante.
+  whatsappContato: "5511998825283"   // número da loja (só dígitos, com 55). Usado no botão flutuante.
 };
 
 window.__SHEILISSIMA__ = { firebaseConfig, WHATSAPP_WEBHOOK_URL, BUSINESS };
