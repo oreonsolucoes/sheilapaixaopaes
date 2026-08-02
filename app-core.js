@@ -27,7 +27,7 @@
   // Uma "semana de entrega" é identificada pela data (ISO) da SEGUNDA de entrega.
   function ymd(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
-      "-" + String(d.getDate()).padStart(2, "0");
+           "-" + String(d.getDate()).padStart(2, "0");
   }
   function parseYmd(s) {
     const [y, m, dd] = s.split("-").map(Number);
@@ -59,7 +59,7 @@
   }
   function rotuloSemana(iso) {
     const d = parseYmd(iso);
-    const meses = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    const meses = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
     return "Segunda, " + d.getDate() + " de " + meses[d.getMonth()] + ".";
   }
 
@@ -92,7 +92,11 @@
   function observarProdutos(cb) {
     db.ref("produtos").on("value", snap => {
       const arr = [];
-      snap.forEach(ch => arr.push(Object.assign({ id: ch.key }, ch.val())));
+      snap.forEach(ch => {
+        arr.push(Object.assign({ id: ch.key }, ch.val()));
+        // NÃO retornar valor: se a callback do forEach do Firebase retorna truthy,
+        // a iteração para no primeiro item (por isso aparecia só 1 produto).
+      });
       cb(arr);
     });
   }
@@ -118,10 +122,8 @@
         await fetch(WHATSAPP_WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: ref.key, ...registro,
-            rotuloSemana: rotuloSemana(semana)
-          })
+          body: JSON.stringify({ id: ref.key, ...registro,
+            rotuloSemana: rotuloSemana(semana) })
         });
       } catch (e) { console.warn("Webhook falhou:", e); }
     }
