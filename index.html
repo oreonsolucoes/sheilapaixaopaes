@@ -32,14 +32,21 @@
   <!-- HERO -->
   <section class="hero">
     <div class="wrap hero-in">
-      <p class="eyebrow">Fornada semanal · entrega toda segunda</p>
-      <h1 class="hero-titulo">Pão de verdade,<br>como o de<br><em>antigamente.</em></h1>
-      <p class="hero-slogan">Feito à mão, feito pra você.</p>
-      <p class="hero-sub">Fermentação natural, sem pressa, sem atalho. Cada semana é uma
-        fornadinha pequena e caprichada — por isso as vagas são contadas. Assado no
-        sábado, quentinho na sua segunda.</p>
-      <a href="#produtos" class="btn btn-grande">Quero o meu</a>
-      <div class="hero-nota"><span class="pill-vagas">Só 10 pães por semana</span> feitos um a um</div>
+      <div class="hero-txt">
+        <p class="eyebrow">Fornada semanal · entrega sáb, dom ou seg</p>
+        <h1 class="hero-titulo">Pão de verdade,<br>como o de<br><em>antigamente.</em></h1>
+        <p class="hero-slogan">Feito à mão, feito pra você.</p>
+        <p class="hero-sub">Fermentação natural, sem pressa, sem atalho. Cada semana é uma
+          fornadinha pequena e caprichada — por isso as vagas são contadas. Assado no
+          sábado, fresquinho no seu sábado, domingo ou segunda.</p>
+        <a href="#produtos" class="btn btn-grande">Quero o meu</a>
+        <div class="hero-nota"><span class="pill-vagas">Só 20 pães por semana</span> feitos um a um</div>
+      </div>
+      <div class="hero-foto">
+        <img
+          src="https://github.com/oreonsolucoes/sheilapaixaopaes/blob/main/img/ChatGPT%20Image%202%20de%20ago.%20de%2020266,%2000_01_46.png?raw=true"
+          alt="Pão artesanal Sheila Paixão" loading="eager" />
+      </div>
     </div>
     <div class="hero-borda"></div>
   </section>
@@ -75,8 +82,15 @@
       <div class="slide"
         style="--bg:url('https://github.com/oreonsolucoes/sheilapaixaopaes/blob/main/img/ChatGPT%20Image%202%20de%20ago.%20de%202026,%2000_041_46.png?raw=true')">
         <div class="slide-txt">
-          <h3>Casca Fofinha, miolo macio</h3>
+          <h3>Casca crocante, miolo macio</h3>
           <p>O ponto certo em cada fatia.</p>
+        </div>
+      </div>
+      <div class="slide"
+        style="--bg:url('https://github.com/oreonsolucoes/sheilapaixaopaes/blob/main/img/ChatGPT%20Image%202%20de%20ago.%20de%2020266,%2000_01_46.png?raw=true')">
+        <div class="slide-txt">
+          <h3>Encomende a sua semana</h3>
+          <p>Vagas limitadas. Entrega no fim de semana.</p>
         </div>
       </div>
     </div>
@@ -123,9 +137,15 @@
         </div>
 
         <div class="campo">
-          <label for="semana">Semana de recebimento <span class="tag">entrega na segunda</span></label>
-          <select id="semana" name="semana" required></select>
+          <label for="leva">Semana de entrega <span class="tag">assado no sábado</span></label>
+          <select id="leva" name="leva" required></select>
           <div id="status-semana" class="status-semana"></div>
+        </div>
+
+        <div class="campo">
+          <label for="dia-entrega">Dia da entrega</label>
+          <select id="dia-entrega" name="dia-entrega" required></select>
+          <small>Entregamos sábado, domingo ou segunda dessa leva.</small>
         </div>
 
         <div class="campo">
@@ -155,16 +175,16 @@
         <p class="secao-intro claro">Com amor e carinho, tudo fica mais gostoso.</p>
       </div>
       <ol class="passos">
-        <li><span>Dom → Sex</span>
-          <p>As encomendas ficam abertas. Você escolhe a segunda em que quer receber.</p>
+        <li><span>Até domingo</span>
+          <p>As encomendas ficam abertas. Você escolhe entregar no sábado, domingo ou segunda.</p>
         </li>
-        <li><span>10 pães</span>
-          <p>Cada semana comporta 10 pães. Ao completar, a semana fecha automaticamente.</p>
+        <li><span>20 pães</span>
+          <p>Cada leva comporta 20 pães. Ao completar, a semana fecha automaticamente.</p>
         </li>
         <li><span>Sábado</span>
-          <p>O lote da semana é confeccionado à mão, um a um.</p>
+          <p>A leva é assada à mão, um a um.</p>
         </li>
-        <li><span>Segunda</span>
+        <li><span>Sáb · Dom · Seg</span>
           <p>Entrega direta, fresquinho, no dia que você escolheu.</p>
         </li>
       </ol>
