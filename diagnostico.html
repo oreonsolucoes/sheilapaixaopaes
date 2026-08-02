@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diagnóstico · produtos</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:800px;margin:30px auto;padding:0 20px;color:#222}
+  h1{font-size:20px} .item{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0}
+  .k{color:#a6303b;font-weight:600} pre{background:#f6f2ea;padding:12px;border-radius:8px;overflow:auto}
+  .aviso{background:#fff3cd;padding:10px 14px;border-radius:8px;margin:10px 0}
+</style>
+</head>
+<body>
+<h1>Diagnóstico — o que está salvo em <code>produtos</code></h1>
+<p>Abra esta página no mesmo site (depois de configurar o Firebase). Ela mostra
+   exatamente quantos produtos existem no banco e o conteúdo de cada um.</p>
+<div id="saida">Lendo o banco…</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  const cfg = window.__SHEILISSIMA__.firebaseConfig;
+  firebase.initializeApp(cfg);
+  const db = firebase.database();
+  const saida = document.getElementById("saida");
+
+  db.ref("produtos").once("value").then(snap => {
+    const total = snap.numChildren();
+    let html = `<div class="aviso"><strong>Total de produtos no banco: ${total}</strong></div>`;
+    if (total === 0) {
+      html += "<p>O banco não tem nenhum produto. Se você criou pelo painel, "
+            + "verifique se estava logado e se salvou sem erro.</p>";
+    }
+    snap.forEach(ch => {
+      const v = ch.val();
+      html += `<div class="item"><div class="k">chave: ${ch.key}</div>`
+            + `<pre>${JSON.stringify(v, null, 2)}</pre></div>`;
+    });
+    saida.innerHTML = html;
+  }).catch(err => {
+    saida.innerHTML = `<div class="aviso"><strong>Erro ao ler:</strong> ${err.message}<br><br>`
+      + `Se aparecer "permission denied", o problema está nas regras do banco: "produtos" "
+      + "precisa ter <code>".read": true</code>.</div>`;
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "produtos": {
+      ".read": true,
+      ".write": "auth != null",
+      ".indexOn": ["ativo"]
+    },
+    "pedidos": {
+      ".read": "auth != null",
+      ".indexOn": ["semana", "criadoEm"],
+      "$pid": {
+        ".write": "auth != null || (!data.exists() && newData.exists())",
+        ".validate": "newData.hasChildren(['nome','whatsapp','semana','itens','totalPaes'])"
+      }
+    },
+    "config": {
+      ".read": true,
+      ".write": "auth != null"
+    }
+  }
+}

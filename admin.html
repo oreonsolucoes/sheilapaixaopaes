@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel · Sheila Paixão</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="admin">
+
+  <!-- LOGIN -->
+  <div id="tela-login" class="login-tela">
+    <form id="form-login" class="login-card">
+      <span class="marca-selo grande">SP</span>
+      <h1>Painel Sheila Paixão</h1>
+      <p class="login-sub">Acesso restrito à administração.</p>
+      <div class="campo"><label>E-mail</label>
+        <input id="email" type="email" required placeholder="voce@email.com" />
+      </div>
+      <div class="campo"><label>Senha</label>
+        <input id="senha" type="password" required placeholder="••••••••" />
+      </div>
+      <button class="btn btn-cheio" type="submit">Entrar</button>
+      <p id="erro-login" class="msg-form"></p>
+    </form>
+  </div>
+
+  <!-- APP -->
+  <div id="tela-app" hidden>
+    <header class="admin-topo">
+      <div class="wrap admin-topo-in">
+        <div class="marca"><span class="marca-selo">SP</span><span class="marca-txt">Painel</span></div>
+        <nav class="admin-tabs">
+          <button class="tab ativa" data-tab="pedidos">Pedidos</button>
+          <button class="tab" data-tab="produtos">Produtos</button>
+          <button class="tab" data-tab="semanas">Semanas</button>
+        </nav>
+        <button id="sair" class="btn btn-ghost btn-pequeno">Sair</button>
+      </div>
+    </header>
+
+    <main class="wrap admin-main">
+
+      <!-- PEDIDOS -->
+      <section id="painel-pedidos" class="painel">
+        <div class="metrica-linha" id="metricas"></div>
+        <div class="filtro-semana">
+          <label>Filtrar por semana:</label>
+          <select id="filtro-semana">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div id="lista-pedidos" class="lista-pedidos"></div>
+      </section>
+
+      <!-- PRODUTOS -->
+      <section id="painel-produtos" class="painel" hidden>
+        <div class="painel-cabe">
+          <h2>Produtos</h2>
+          <button id="novo-produto" class="btn btn-pequeno">+ Novo produto</button>
+        </div>
+        <div id="lista-produtos" class="lista-produtos"></div>
+      </section>
+
+      <!-- SEMANAS -->
+      <section id="painel-semanas" class="painel" hidden>
+        <div class="painel-cabe">
+          <h2>Capacidade por semana</h2>
+        </div>
+        <p class="ajuda">Padrão: <strong id="cap-padrao"></strong> pães por semana.
+          Ajuste abaixo a quantidade liberada para uma semana específica.</p>
+        <div id="lista-semanas" class="lista-semanas"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL PRODUTO -->
+  <div id="modal-produto" class="modal" hidden>
+    <form class="modal-card modal-form" id="form-produto">
+      <h3 id="modal-produto-titulo">Novo produto</h3>
+      <input type="hidden" id="p-id" />
+      <div class="campo"><label>Foto do pão (URL da imagem)</label>
+        <input id="p-foto" type="url" placeholder="https://…  (deixe vazio para usar o emoji)" />
+        <small>Cole o link de uma foto (Instagram, Google Fotos público, Imgur etc.).</small>
+      </div>
+      <div class="campo"><label>Emoji / ícone (usado se não houver foto)</label>
+        <input id="p-emoji" maxlength="4" placeholder="🍞" />
+      </div>
+      <div class="campo"><label>Nome</label>
+        <input id="p-nome" required placeholder="Pão de fermentação natural" />
+      </div>
+      <div class="campo"><label>Descrição</label>
+        <textarea id="p-desc" rows="2" placeholder="Casca crocante, miolo aerado…"></textarea>
+      </div>
+      <div class="campo"><label>Preço (R$)</label>
+        <input id="p-preco" type="number" step="0.01" min="0" required placeholder="0,00" />
+      </div>
+      <label class="check"><input type="checkbox" id="p-ativo" checked /> Disponível para pedidos</label>
+      <div class="modal-acoes">
+        <button type="button" class="btn btn-ghost" id="cancelar-produto">Cancelar</button>
+        <button type="submit" class="btn">Salvar</button>
+      </div>
+      <button type="button" id="excluir-produto" class="btn-excluir" hidden>Excluir produto</button>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app-core.js"></script>
+  <script src="admin.js"></script>
+</body>
+
+</html>
