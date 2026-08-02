@@ -57,7 +57,9 @@ function carregarPedidos() {
 
   Core.db.ref("pedidos").on("value", snap => {
     TODOS_PEDIDOS = [];
-    snap.forEach(ch => TODOS_PEDIDOS.push(Object.assign({ id: ch.key }, ch.val())));
+    snap.forEach(ch => {
+      TODOS_PEDIDOS.push(Object.assign({ id: ch.key }, ch.val()));
+    });
     TODOS_PEDIDOS.sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
     renderPedidos();
     renderMetricas();
@@ -120,8 +122,8 @@ function carregarProdutos() {
     box.innerHTML = prods.map(p => `
       <article class="produto-item ${p.ativo === false ? "inativo" : ""}">
         <div class="produto-emoji" data-emoji="${esc(p.emoji || "🍞")}">${p.foto
-        ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" class="produto-thumb" data-fallback>`
-        : (p.emoji || "🍞")}</div>
+          ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" class="produto-thumb" data-fallback>`
+          : (p.emoji || "🍞")}</div>
         <div class="produto-info">
           <strong>${esc(p.nome)}</strong>
           <p>${esc(p.descricao || "")}</p>
@@ -131,10 +133,8 @@ function carregarProdutos() {
       </article>`).join("");
     // fallback de imagem quebrada -> emoji (sem HTML inline frágil)
     box.querySelectorAll("img[data-fallback]").forEach(img => {
-      img.onerror = () => {
-        img.parentElement.textContent =
-        img.parentElement.getAttribute("data-emoji") || "🍞";
-      };
+      img.onerror = () => { img.parentElement.textContent =
+        img.parentElement.getAttribute("data-emoji") || "🍞"; };
     });
     $$("[data-edit]").forEach(b => b.onclick = () =>
       abrirModalProduto(prods.find(x => x.id === b.dataset.edit)));
