@@ -766,7 +766,15 @@ a {
   border: none !important;
   box-shadow: none !important;
   padding: 0;
-  font-size: 15px
+  font-size: 15px;
+  font-weight: 600;
+  -moz-appearance: textfield
+}
+
+.bloco-qtd::-webkit-outer-spin-button,
+.bloco-qtd::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0
 }
 
 .bloco-remove {
