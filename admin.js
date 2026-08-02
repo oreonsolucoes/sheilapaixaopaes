@@ -48,9 +48,9 @@ function iniciarApp() {
 let TODOS_PEDIDOS = [];
 function carregarPedidos() {
   const filtro = $("#filtro-semana");
-  Core.proximasSegundas(8).forEach(iso => {
+  Core.proximasSemanas(8).forEach(sab => {
     const o = document.createElement("option");
-    o.value = iso; o.textContent = Core.rotuloSemana(iso);
+    o.value = sab; o.textContent = Core.rotuloSemana(sab);
     filtro.appendChild(o);
   });
   filtro.onchange = renderPedidos;
@@ -78,7 +78,7 @@ function renderMetricas() {
 
 function renderPedidos() {
   const f = $("#filtro-semana").value;
-  const lista = f ? TODOS_PEDIDOS.filter(p => p.semana === f) : TODOS_PEDIDOS;
+  const lista = f ? TODOS_PEDIDOS.filter(p => p.leva === f) : TODOS_PEDIDOS;
   const box = $("#lista-pedidos");
   if (!lista.length) { box.innerHTML = '<div class="vazio">Nenhum pedido por aqui ainda.</div>'; return; }
 
@@ -93,7 +93,7 @@ function renderPedidos() {
           <strong>${esc(p.nome)}</strong>
           <a class="zap" href="https://wa.me/55${zap}" target="_blank">📱 ${esc(p.whatsapp)}</a>
         </div>
-        <span class="pedido-semana">${Core.rotuloSemana(p.semana)}</span>
+        <span class="pedido-semana">${p.diaEntrega ? Core.rotuloDia(p.diaEntrega) : (p.semana ? Core.rotuloDia(p.semana) : "—")}</span>
       </div>
       <ul class="pedido-itens">${itens}</ul>
       <div class="pedido-rodape">
@@ -122,8 +122,8 @@ function carregarProdutos() {
     box.innerHTML = prods.map(p => `
       <article class="produto-item ${p.ativo === false ? "inativo" : ""}">
         <div class="produto-emoji" data-emoji="${esc(p.emoji || "🍞")}">${p.foto
-          ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" class="produto-thumb" data-fallback>`
-          : (p.emoji || "🍞")}</div>
+        ? `<img src="${esc(p.foto)}" alt="${esc(p.nome)}" class="produto-thumb" data-fallback>`
+        : (p.emoji || "🍞")}</div>
         <div class="produto-info">
           <strong>${esc(p.nome)}</strong>
           <p>${esc(p.descricao || "")}</p>
@@ -133,8 +133,10 @@ function carregarProdutos() {
       </article>`).join("");
     // fallback de imagem quebrada -> emoji (sem HTML inline frágil)
     box.querySelectorAll("img[data-fallback]").forEach(img => {
-      img.onerror = () => { img.parentElement.textContent =
-        img.parentElement.getAttribute("data-emoji") || "🍞"; };
+      img.onerror = () => {
+        img.parentElement.textContent =
+        img.parentElement.getAttribute("data-emoji") || "🍞";
+      };
     });
     $$("[data-edit]").forEach(b => b.onclick = () =>
       abrirModalProduto(prods.find(x => x.id === b.dataset.edit)));
@@ -182,7 +184,7 @@ $("#excluir-produto").onclick = () => {
 //  SEMANAS (capacidade)
 // ============================================================
 function carregarSemanas() {
-  const semanas = Core.proximasSegundas(8);
+  const semanas = Core.proximasSemanas(8);
   const box = $("#lista-semanas");
 
   Core.db.ref("config/capacidadeSemana").on("value", capSnap => {
@@ -191,7 +193,8 @@ function carregarSemanas() {
       const usoPorSemana = {};
       pedSnap.forEach(ch => {
         const v = ch.val();
-        usoPorSemana[v.semana] = (usoPorSemana[v.semana] || 0) + Number(v.totalPaes || 0);
+        const chave = v.leva || v.semana; // compat: pedidos antigos usavam "semana"
+        if (chave) usoPorSemana[chave] = (usoPorSemana[chave] || 0) + Number(v.totalPaes || 0);
       });
 
       box.innerHTML = semanas.map(iso => {
