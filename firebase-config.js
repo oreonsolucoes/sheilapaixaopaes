@@ -32,7 +32,7 @@ const BUSINESS = {
   entregaNoDia: 1,            // 1 = segunda-feira
   nomeLoja: "Sheila Paixão",
   slogan: "Feito à mão, feito pra você",
-  whatsappContato: "5511998825283"   // número da loja (só dígitos, com 55). Usado no botão flutuante.
+  whatsappContato: "5511976761111"   // número da loja (só dígitos, com 55). Usado no botão flutuante.
 };
 
 window.__SHEILISSIMA__ = { firebaseConfig, WHATSAPP_WEBHOOK_URL, BUSINESS };
